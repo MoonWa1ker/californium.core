@@ -662,7 +662,8 @@ public class CoapClient {
 	 * @param request the custom request
 	 */
 	public void advanced(CoapHandler handler, Request request) {
-		request.setURI(uri);
+		if(request.getURI() == null)
+			request.setURI(uri);
 		asynchronous(request, handler);
 	}
 	

@@ -239,7 +239,7 @@ public class EndpointManager {
 		}
 		
 		//andrianeshsg: set the exchange also, so we can mark it as
-		//completed in case we need to.
+		//completed later on.
 		/* (non-Javadoc)
 		 * @see ch.inf.vs.californium.MessageDeliverer#deliverResponse(ch.inf.vs.californium.network.Exchange, ch.inf.vs.californium.coap.Response)
 		 */
@@ -248,7 +248,9 @@ public class EndpointManager {
 			if (exchange == null) throw new NullPointerException();
 			if (exchange.getRequest() == null) throw new NullPointerException();
 			if (response == null) throw new NullPointerException();
+			response.setExchange(exchange);
 			exchange.getRequest().setResponse(response, exchange);
+			
 		}
 	}
 }

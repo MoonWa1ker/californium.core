@@ -24,6 +24,7 @@
 package org.eclipse.californium.core.coap;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.Matcher;
 import org.eclipse.californium.core.network.stack.ReliabilityLayer;
 
@@ -41,6 +42,10 @@ public class Response extends Message {
 	private long rtt;
 
 	private boolean last = true;
+	
+	//andrianeshsg
+	/** The corresponding exchange */
+	private Exchange exchange;
 	
 	/**
 	 * Creates a response to the specified request with the specified response
@@ -111,4 +116,14 @@ public class Response extends Message {
 	public void setRTT(long rtt) {
 		this.rtt = rtt;
 	}
+
+	public Exchange getExchange() {
+		return exchange;
+	}
+
+	public void setExchange(Exchange exchange) {
+		this.exchange = exchange;
+	}
+	
+	
 }
