@@ -5,13 +5,18 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.Utils;
 import org.eclipse.californium.core.network.Exchange;
 
-public class MyHandler implements CoapHandler{
+/**
+ * Handler used in asynchronous calls with a timeout nature.
+ * @author andrianeshsg
+ *
+ */
+public class TimedHandler implements CoapHandler{
 
-	private Thread t;
+	protected Thread t;
 	private long timeout;
 //	private int i;
 	
-	public MyHandler(long timeout) {
+	public TimedHandler(long timeout) {
 		t = null;
 		this.timeout = timeout;
 		
@@ -23,14 +28,9 @@ public class MyHandler implements CoapHandler{
 	@Override
 	public void onLoad(CoapResponse response) {
 		// TODO Auto-generated method stub
-		System.out.println("RECEIVED A RESPONSE!!!! SourceAddr: "+response.advanced().getSource());
-		System.out.println(Utils.prettyPrint(response));
-		if(t != null)
-			t.interrupt();
+		checkResponse(response);
 		
-		MyRunnable myR = new MyRunnable(response.advanced().getExchange(), timeout);
-		t = new Thread(myR, "Response-Timeout Thread");
-		t.start();
+		restartThread(response);
 		
 	}
 
@@ -40,6 +40,18 @@ public class MyHandler implements CoapHandler{
 		System.out.println("TIMEOUT OR REJECTED BY THE SERVER!");
 	}
 	
+	protected void checkResponse(CoapResponse response){
+		System.out.println("RECEIVED A RESPONSE!!!! SourceAddr: "+response.advanced().getSource());
+		System.out.println(Utils.prettyPrint(response));
+		if(t != null)
+			t.interrupt();
+	}
+	
+	protected void restartThread(CoapResponse response){
+		MyRunnable myR = new MyRunnable(response.advanced().getExchange(), timeout);
+		t = new Thread(myR, "Response-Timeout Thread");
+		t.start();
+	}
 	
 	private class MyRunnable implements Runnable{
 

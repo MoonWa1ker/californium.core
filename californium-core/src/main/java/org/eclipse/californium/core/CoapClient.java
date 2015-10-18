@@ -21,7 +21,9 @@ package org.eclipse.californium.core;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,6 +32,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.californium.core.coap.BlockOption;
 import org.eclipse.californium.core.coap.CoAP;
+import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.LinkFormat;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
@@ -39,6 +42,8 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.mainpackage.RDInterfaceContext;
+import org.eclipse.californium.mainpackage.TimedHandler;
 
 /**
  * The Class CoapClient.
@@ -64,6 +69,9 @@ public class CoapClient {
 	
 	/** The endpoint. */
 	private Endpoint endpoint;
+	
+	/** List of all the resource directories, that discoverRD located. */
+	private List<RDInterfaceContext> rdList = new ArrayList<RDInterfaceContext>(0);
 	
 	/**
 	 * Constructs a new CoapClient that has no destination URI yet.
@@ -309,6 +317,51 @@ public class CoapClient {
 		
 		// parse and return
 		return LinkFormat.parse(links.getResponseText());
+	}
+	
+	/**
+	 * Discovers the RD and returns its address and the paths according to the query.
+	 * @param uri scheme + ip
+	 * @param query the query (core.rd, core.rd-lookup, core.rd-group, core.rd*)
+	 */
+	public void discoverRD(String uri, String query){
+		Request request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
+		request.setURI(uri);
+		request.setMulticast(true);
+		request.getOptions().clearUriPath().clearUriQuery().setUriPath("/.well-known/core");
+		request.getOptions().setUriQuery(query);
+		
+		//GetRDInterfaceHandler handler = new GetRDInterfaceHandler(this, 2000);
+		Response response = null;
+		request = send(request, getEffectiveEndpoint(request));
+		try {
+			while(true){
+				response = request.waitForResponse(getTimeout());
+				
+				if(response == null){
+					return;
+				}
+				else {
+					CoapResponse coapResponse = new CoapResponse(response);
+					Set<WebLink> webLinks = LinkFormat.parse(coapResponse.getResponseText());
+					RDInterfaceContext rdIntCtx = new RDInterfaceContext(response.getSource().getHostAddress(), response.getSourcePort());
+					for(WebLink w : webLinks) {
+						String rt = w.getAttributes().getResourceTypes().get(0);
+						if(rt.equals("core.rd"))
+							rdIntCtx.setRdPath(w.getURI());
+						else if (rt.equals("core.rd-lookup"))
+							rdIntCtx.setRdLookupPath(w.getURI());
+						else if (rt.equals("core.rd-group"))
+							rdIntCtx.setRdGroupPath(w.getURI());
+					}
+					System.out.println(rdIntCtx.toString());
+					rdList.add(rdIntCtx);
+				}
+			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	// Synchronous GET
@@ -769,17 +822,10 @@ public class CoapClient {
 			Response response = null;
 			request = send(request, outEndpoint);
 			
-			while(true){
-				response = request.waitForResponse(getTimeout());
-				if(response == null){
-//					request.getExchange().setComplete();
-					return null;
-				}
-				else {
-					System.out.println("RESPONSE!");
-					System.out.println(Utils.prettyPrint(response));
-				}
-			}
+	
+			response = request.waitForResponse(getTimeout());
+			
+			return new CoapResponse(response);
 			
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);

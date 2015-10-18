@@ -69,20 +69,23 @@ public class HelloWorld {
 		CoapClient client = new CoapClient();
 		client.useNONs();
 		CoAPEndpoint client_cEP = new CoAPEndpoint(9999);
-		
-		//client_cEP.addInterceptor(new MessageTracer());
 		client.setEndpoint(client_cEP);
-//		client.setTimeout(2000);
-//		//client.setEndpoint(clientEp);
-//		"coap://224.0.1.187:5685/.well-known/core?rt=core.rd"
-		Request request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
-		request.setURI("coap://224.0.1.187/.well-known/core?rt=core.rd");
-//		request.setPayload("Hi, i am the client!");
-		request.setMulticast(true);
+		client.setTimeout(2000);
+		client.discoverRD("coap://224.0.1.187", "rt=core.rd*");
 		
-		request.setConfirmable(false);
-		MyHandler myHandler = new MyHandler(CLIENT_TIMEOUT);
-		client.advanced(myHandler, request);
+////		"coap://224.0.1.187:5685/.well-known/core?rt=core.rd"
+//		Request request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
+//		request.setURI("coap://224.0.1.187/.well-known/core?rt=core.rd");
+//		request.setPayload("Hi, i am the client!");
+//		request.setMulticast(true);
+//		request.setConfirmable(false);
+//		TimedHandler myHandler = new TimedHandler(CLIENT_TIMEOUT);
+//		client.advanced(myHandler, request);
+		
+		
+		
+		
+		
 //		if(response == null)
 //			System.out.println("GURISE NULL RESPONSE( EKANE TIMEOUT TO WAITFORRESPONSE!!!)");
 //		else
