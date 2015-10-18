@@ -16,6 +16,7 @@ import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.MyUDPConnector;
 import org.eclipse.californium.core.network.interceptors.MessageTracer;
+import org.eclipse.californium.core.rd.ResourceDirectory;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 
@@ -23,14 +24,10 @@ public class HelloWorld {
 	private static final long CLIENT_TIMEOUT = 2000;
 	
 	public static void main(String[] args) {
+		// SERVER 1
 		CoapServer server1 = new CoapServer();
-		CoAPEndpoint server1_cEP = new CoAPEndpoint(5685);
-		//server1_cEP.addInterceptor(new MessageTracer());
+		CoAPEndpoint server1_cEP = new CoAPEndpoint(5683);
 		server1.addEndpoint(server1_cEP);
-//		MyUDPConnector myUDPc = (MyUDPConnector)cEP.getConnector();
-		//myUDPc.joinGroup(group);
-//		server1.addEndpoint(new CoAPEndpoint(address));
-//		server1.remove(server1.getRoot());
 		server1.add(new CoapResource("HelloWorld_Resource_Name") {
 			public void handleGET(CoapExchange exchange) {
 				System.out.println("Thelw na apadisw ston "+exchange.getSourceAddress().getHostAddress()+":"
@@ -45,8 +42,10 @@ public class HelloWorld {
 			System.out.println("[server1]Child resource: " + r.getName());
 		}
 		
-		CoapServer server2 = new CoapServer(5685);
-//		server2.remove(server1.getRoot());
+		// SERVER 2
+		CoapServer server2 = new CoapServer();
+		CoAPEndpoint server2_cEP = new CoAPEndpoint(5683);
+		server2.addEndpoint(server2_cEP);
 		server2.add(new CoapResource("HelloWorld_Resource_Name") {
 			public void handleGET(CoapExchange exchange) {
 				System.out.println("Thelw na apadisw ston "+exchange.getSourceAddress().getHostAddress()+":"
@@ -60,7 +59,13 @@ public class HelloWorld {
 		for(Resource r : server2.getRoot().getChildren()){
 			System.out.println("[server2]Child resource: " + r.getName());
 		}
-//		
+
+		// RESOURCE DIRECTORY SERVER
+		ResourceDirectory rd = new ResourceDirectory();
+		rd.startServer();
+		
+		
+		// CLIENT
 		CoapClient client = new CoapClient();
 		client.useNONs();
 		CoAPEndpoint client_cEP = new CoAPEndpoint(9999);
@@ -69,10 +74,10 @@ public class HelloWorld {
 		client.setEndpoint(client_cEP);
 //		client.setTimeout(2000);
 //		//client.setEndpoint(clientEp);
-//		
-		Request request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name
-		request.setURI("coap://224.0.1.187:5685/.well-known/core?rt=core.rd");
-		request.setPayload("Hi, i am the client!");
+//		"coap://224.0.1.187:5685/.well-known/core?rt=core.rd"
+		Request request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
+		request.setURI("coap://224.0.1.187/.well-known/core?rt=core.rd");
+//		request.setPayload("Hi, i am the client!");
 		request.setMulticast(true);
 		
 		request.setConfirmable(false);

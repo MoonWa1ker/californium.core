@@ -188,10 +188,12 @@ public class LinkFormat {
 				} else if (attributes.containsAttribute(attrName)) {
 					// lookup attribute value
 					for (String actual : attributes.getAttributeValues(attrName)) {
-					
 						// get prefix length according to "*"
 						int prefixLength = expected.indexOf('*');
-						if (prefixLength >= 0 && prefixLength < actual.length()) {
+						//andrianeshsg: in case we need to compare 
+						//expected[core.rd] with actual[core.rd*] 
+						//prefixLength less than OR EQUALS to actual.length
+						if (prefixLength >= 0 && prefixLength <= actual.length()) {
 					
 							// reduce to prefixes
 							expected = expected.substring(0, prefixLength);

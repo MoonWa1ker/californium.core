@@ -23,7 +23,7 @@ public class MyHandler implements CoapHandler{
 	@Override
 	public void onLoad(CoapResponse response) {
 		// TODO Auto-generated method stub
-		System.out.println("RECEIVED A RESPONSE!!!!");
+		System.out.println("RECEIVED A RESPONSE!!!! SourceAddr: "+response.advanced().getSource());
 		System.out.println(Utils.prettyPrint(response));
 		if(t != null)
 			t.interrupt();
