@@ -62,6 +62,7 @@ public class HelloWorld {
 		}
 //		
 		CoapClient client = new CoapClient();
+		client.useNONs();
 		CoAPEndpoint client_cEP = new CoAPEndpoint(9999);
 		
 		//client_cEP.addInterceptor(new MessageTracer());
@@ -69,8 +70,8 @@ public class HelloWorld {
 //		client.setTimeout(2000);
 //		//client.setEndpoint(clientEp);
 //		
-		Request request = new Request(Code.GET);//allnodes 224.0.1.187
-		request.setURI("coap://224.0.1.187:5685/HelloWorld_Resource_Name");
+		Request request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name
+		request.setURI("coap://224.0.1.187:5685/.well-known/core?rt=core.rd");
 		request.setPayload("Hi, i am the client!");
 		request.setMulticast(true);
 		

@@ -14,6 +14,10 @@ public class MyHandler implements CoapHandler{
 	public MyHandler(long timeout) {
 		t = null;
 		this.timeout = timeout;
+		
+		MyRunnable myR = new MyRunnable(null, timeout);
+		t = new Thread(myR, "Initial Response-Timeout Thread");
+		t.start();
 	}
 	
 	@Override
@@ -25,7 +29,7 @@ public class MyHandler implements CoapHandler{
 			t.interrupt();
 		
 		MyRunnable myR = new MyRunnable(response.advanced().getExchange(), timeout);
-		t = new Thread(myR, "Response Timeout Thread");
+		t = new Thread(myR, "Response-Timeout Thread");
 		t.start();
 		
 	}
@@ -54,7 +58,8 @@ public class MyHandler implements CoapHandler{
 				System.out.println(Thread.currentThread().getName() + ": Sleeping...");
 				Thread.sleep(timeout);
 				System.out.println(Thread.currentThread().getName() + ": Woke up normally, completing the exchange!");
-				exchange.setComplete();
+				if(exchange != null)
+					exchange.setComplete();
 			} catch (InterruptedException e) {
 				System.out.println(Thread.currentThread().getName() + ": Woke up unexpectedly..");
 			}

@@ -511,6 +511,8 @@ public class CoAPEndpoint implements Endpoint {
 			for (MessageInterceptor interceptor:interceptors)
 				interceptor.sendResponse(response);
 
+			response.setCanceled(setAsCanceled(exchange, response));
+			
 			// MessageInterceptor might have canceled
 			if (!response.isCanceled())
 				connector.send(serializer.serialize(response));
@@ -535,9 +537,24 @@ public class CoAPEndpoint implements Endpoint {
 			for (MessageInterceptor interceptor:interceptors)
 				interceptor.sendEmptyMessage(message);
 
+			message.setCanceled(setAsCanceled(exchange, message));
+			
 			// MessageInterceptor might have canceled
 			if (!message.isCanceled())
 				connector.send(serializer.serialize(message));
+		}
+		
+		/**
+		 * Cancels the message if it has empty payload AND the corresponding request was multicast.
+		 * @param exchange The ongoing exchange.
+		 * @param msg the message that is about to be sent.
+		 * @return true, to cancel the message, false otherwise.
+		 */
+		private boolean setAsCanceled(Exchange exchange, Message msg){
+			String msgPayload = msg.getPayloadString();
+//			System.out.println("CANCELINGGGGGGG: "+ (msgPayload.equals("") && exchange.getCurrentRequest().isMulticast()));
+//			System.out.println("PAYLOAD["+msgPayload+"] ISMULTICAST["+exchange.getCurrentRequest().isMulticast()+"]");
+			return (msgPayload.equals("") && exchange.getRequest().isMulticast());
 		}
 	}
 	
