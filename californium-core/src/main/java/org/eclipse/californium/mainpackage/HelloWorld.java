@@ -16,9 +16,12 @@ import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.MyUDPConnector;
 import org.eclipse.californium.core.network.interceptors.MessageTracer;
-import org.eclipse.californium.core.rd.ResourceDirectory;
+//import org.eclipse.californium.core.rd.ResourceDirectory;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.tools.resources.RDLookUpTopResource;
+import org.eclipse.californium.tools.resources.RDResource;
+import org.eclipse.californium.tools.resources.RDTagTopResource;
 
 public class HelloWorld {
 	private static final long CLIENT_TIMEOUT = 2000;
@@ -61,8 +64,17 @@ public class HelloWorld {
 		}
 
 		// RESOURCE DIRECTORY SERVER
-		ResourceDirectory rd = new ResourceDirectory();
-		rd.startServer();
+//		ResourceDirectory rd = new ResourceDirectory();
+//		rd.startServer();
+		CoapServer rdServer = new CoapServer();
+		CoAPEndpoint rd_cEP = new CoAPEndpoint(5683);
+		rdServer.addEndpoint(rd_cEP);
+		RDResource rdResource = new RDResource(); 
+        // add resources to the server
+		rdServer.add(rdResource);
+		rdServer.add(new RDLookUpTopResource(rdResource));
+		rdServer.add(new RDTagTopResource(rdResource));
+		rdServer.start();
 		
 		
 		// CLIENT
@@ -73,6 +85,30 @@ public class HelloWorld {
 		client.setTimeout(2000);
 		client.discoverRD("coap://224.0.1.187", "rt=core.rd*");
 		
+		Request request = new Request(Code.POST);
+		request.setURI("coap://"+client.rdList.get(0).getAddress()
+		+ client.rdList.get(0).getRdPath()+"?ep=node1");
+		System.out.println("["+request.getURI()+"]");
+		request.setPayload("</sensors/temp>;ct=41;rt='temperature-c';if='sensor',"
+				+ "</sensors/light>;ct=41;rt='light-lux';if='sensor'");
+		CoapResponse response = client.advanced(request);
+		
+		if(response != null){
+			//System.out.println(response.advanced().getPayloadString());
+			String locationPath = response.getOptions().getLocationPathString();
+			System.out.println("CODE["+response.getCode().toString()+"] Location["+locationPath+"]");
+			request = new Request(Code.GET);
+			request.setURI("coap://"+client.rdList.get(0).getAddress()
+					+ "/rd-lookup/res?rt=temperature");
+			System.out.println("["+request.getURI()+"]");
+			response = client.advanced(request);
+			if(response != null)
+				System.out.println("CODE["+response.getCode().toString()+"]"+" Payload[" + response.advanced().getPayloadString()+"]");
+			else
+				System.out.println("NULL RESPONSE2");
+		}
+		else
+			System.out.println("NULL RESPONSE1");
 ////		"coap://224.0.1.187:5685/.well-known/core?rt=core.rd"
 //		Request request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
 //		request.setURI("coap://224.0.1.187/.well-known/core?rt=core.rd");

@@ -71,7 +71,7 @@ public class CoapClient {
 	private Endpoint endpoint;
 	
 	/** List of all the resource directories, that discoverRD located. */
-	private List<RDInterfaceContext> rdList = new ArrayList<RDInterfaceContext>(0);
+	public List<RDInterfaceContext> rdList = new ArrayList<RDInterfaceContext>(0);
 	
 	/**
 	 * Constructs a new CoapClient that has no destination URI yet.
@@ -325,7 +325,7 @@ public class CoapClient {
 	 * @param query the query (core.rd, core.rd-lookup, core.rd-group, core.rd*)
 	 */
 	public void discoverRD(String uri, String query){
-		Request request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
+		Request request = new Request(Code.GET); 
 		request.setURI(uri);
 		request.setMulticast(true);
 		request.getOptions().clearUriPath().clearUriQuery().setUriPath("/.well-known/core");
