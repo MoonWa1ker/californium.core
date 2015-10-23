@@ -19,6 +19,7 @@ import org.eclipse.californium.core.network.interceptors.MessageTracer;
 //import org.eclipse.californium.core.rd.ResourceDirectory;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.tools.resources.RDGroupResource;
 import org.eclipse.californium.tools.resources.RDLookUpTopResource;
 import org.eclipse.californium.tools.resources.RDResource;
 import org.eclipse.californium.tools.resources.RDTagTopResource;
@@ -64,8 +65,6 @@ public class HelloWorld {
 		}
 
 		// RESOURCE DIRECTORY SERVER
-//		ResourceDirectory rd = new ResourceDirectory();
-//		rd.startServer();
 		CoapServer rdServer = new CoapServer();
 		CoAPEndpoint rd_cEP = new CoAPEndpoint(5683);
 		rdServer.addEndpoint(rd_cEP);
@@ -73,6 +72,7 @@ public class HelloWorld {
         // add resources to the server
 		rdServer.add(rdResource);
 		rdServer.add(new RDLookUpTopResource(rdResource));
+		rdServer.add(new RDGroupResource(rdResource));
 		rdServer.add(new RDTagTopResource(rdResource));
 		rdServer.start();
 		
@@ -85,30 +85,94 @@ public class HelloWorld {
 		client.setTimeout(2000);
 		client.discoverRD("coap://224.0.1.187", "rt=core.rd*");
 		
+		//CLIENT INITIALIZES RD WITH SOME DATA 1
 		Request request = new Request(Code.POST);
 		request.setURI("coap://"+client.rdList.get(0).getAddress()
 		+ client.rdList.get(0).getRdPath()+"?ep=node1");
-		System.out.println("["+request.getURI()+"]");
 		request.setPayload("</sensors/temp>;ct=41;rt='temperature-c';if='sensor',"
 				+ "</sensors/light>;ct=41;rt='light-lux';if='sensor'");
 		CoapResponse response = client.advanced(request);
+		String locationPath2 = response.getOptions().getLocationPathString();
+		System.out.println("Initialize1: CODE["+response.getCode().toString()+"] Location["+locationPath2+"]");
+		
+		//LOOK UP THE RESOURCES SO FAR
+		request = new Request(Code.GET);
+		request.setURI("coap://"+client.rdList.get(0).getAddress()
+				+ client.rdList.get(0).getRdLookupPath() +"/res");
+		response = client.advanced(request);
+		System.out.println("Lookup: CODE["+response.getCode().toString()+"]"+" Payload[" + response.advanced().getPayloadString()+"]");
+
+		//CLIENT INITIALIZES RD WITH SOME DATA 2
+		request = new Request(Code.POST);
+		request.setURI("coap://"+client.rdList.get(0).getAddress()
+		+ client.rdList.get(0).getRdPath()+"?ep=node2");
+		request.setPayload("</sensors/humid>;ct=41;rt='humidity';if='sensor'");
+		response = client.advanced(request);
+		locationPath2 = response.getOptions().getLocationPathString();
+		System.out.println("Initialize2: CODE["+response.getCode().toString()+"] Location["+locationPath2+"]");
+		
+		//REGISTERING A GROUP(group1[node1, node2])
+		request = new Request(Code.POST);
+		request.setURI("coap://"+client.rdList.get(0).getAddress()
+		+ client.rdList.get(0).getRdGroupPath()+"?gp=group1");
+		System.out.println("["+request.getURI()+"]");
+		request.setPayload("<>;ep='node1', <>;ep='node2'");
+		response = client.advanced(request);
+		
+		//REGISTERING A GROUP(group2[node1, node3])
+		request = new Request(Code.POST);
+		request.setURI("coap://"+client.rdList.get(0).getAddress()
+		+ client.rdList.get(0).getRdGroupPath()+"?gp=group2");
+		System.out.println("["+request.getURI()+"]");
+		request.setPayload("<>;ep='node1', <111.111.111.110>;ep='node3'");
+		response = client.advanced(request);
+		
+		//REGISTERING A GROUP(group3[node1, node2])
+		request = new Request(Code.POST);
+		request.setURI("coap://"+client.rdList.get(0).getAddress()
+		+ client.rdList.get(0).getRdGroupPath()+"?gp=group3");
+		System.out.println("["+request.getURI()+"]");
+		request.setPayload("<>;ep='node1', <>;ep='node2'");
+		response = client.advanced(request);
+		/*
+		  	"</sensors/temp>;ct=41;rt='temperature-c';if='sensor',"
+				+ "</sensors/light>;ct=41;rt='light-lux';if='sensor'"
+		 */
+	
+//		request.setPayload("<>;ep='node1', <>;ep='node2'");
+//		response = client.advanced(request);
 		
 		if(response != null){
-			//System.out.println(response.advanced().getPayloadString());
+//			//System.out.println(response.advanced().getPayloadString());
 			String locationPath = response.getOptions().getLocationPathString();
-			System.out.println("CODE["+response.getCode().toString()+"] Location["+locationPath+"]");
-			request = new Request(Code.GET);
-			request.setURI("coap://"+client.rdList.get(0).getAddress()
-					+ "/rd-lookup/res?rt=temperature");
-			System.out.println("["+request.getURI()+"]");
-			response = client.advanced(request);
-			if(response != null)
-				System.out.println("CODE["+response.getCode().toString()+"]"+" Payload[" + response.advanced().getPayloadString()+"]");
-			else
-				System.out.println("NULL RESPONSE2");
+			System.out.println("Group reg: CODE["+response.getCode().toString()+"] Location["+locationPath+"]");
+//			request = new Request(Code.GET);
+//			request.setURI("coap://"+client.rdList.get(0).getAddress()
+//					+ "/rd-lookup/res?rt=temperature");
+//			System.out.println("["+request.getURI()+"]");
+//			response = client.advanced(request);
+//			if(response != null)
+//				System.out.println("CODE["+response.getCode().toString()+"]"+" Payload[" + response.advanced().getPayloadString()+"]");
+//			else
+//				System.out.println("NULL RESPONSE2");
 		}
-		else
-			System.out.println("NULL RESPONSE1");
+		
+		//LOOK UP THE GROUP RESOURCES SO FAR /rd-lookup/res
+		request = new Request(Code.GET);
+		request.setURI("coap://"+client.rdList.get(0).getAddress()
+				+ client.rdList.get(0).getRdLookupPath() +"/ep?gp=group1");
+		response = client.advanced(request);
+		System.out.println("Group Lookup(/ep): CODE["+response.getCode().toString()+"]"+" Payload[" + response.advanced().getPayloadString()+"]");
+		
+		//LOOK UP THE GROUP RESOURCES SO FAR /rd-lookup/gp
+		request = new Request(Code.GET);
+		request.setURI("coap://"+client.rdList.get(0).getAddress()
+				+ client.rdList.get(0).getRdLookupPath() +"/gp");
+		response = client.advanced(request);
+		System.out.println("Group Lookup(/gp): CODE["+response.getCode().toString()+"]"+" Payload[" + response.advanced().getPayloadString()+"]");
+//		else
+//			System.out.println("NULL RESPONSE1");
+		
 ////		"coap://224.0.1.187:5685/.well-known/core?rt=core.rd"
 //		Request request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
 //		request.setURI("coap://224.0.1.187/.well-known/core?rt=core.rd");

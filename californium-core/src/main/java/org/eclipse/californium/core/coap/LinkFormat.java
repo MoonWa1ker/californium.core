@@ -53,6 +53,7 @@ public class LinkFormat {
 	public static final String CONTEXT		   		 = "con";
 	public static final String END_POINT     		 = "ep";
 	public static final String END_POINT_TYPE		 = "et";
+	public static final String GROUP				 = "gp";	//andrianeshsg: group argument
 
 	// for parsing
 	public static final Pattern DELIMITER      = Pattern.compile("\\s*,+\\s*");

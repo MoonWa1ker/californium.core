@@ -33,5 +33,7 @@ public class RDLookUpTopResource extends CoapResource {
 		add(new RDLookUpDomainResource("d", rd));
 		add(new RDLookUpEPResource("ep", rd));
 		add(new RDLookUpResResource("res", rd));
+		//andrianeshsg: Added lookup with gp argument
+		add(new RDLookUpGPResource("gp", rd));
 	}
 }

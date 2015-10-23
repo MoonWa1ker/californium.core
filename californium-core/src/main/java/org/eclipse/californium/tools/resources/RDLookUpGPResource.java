@@ -1,18 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Institute for Pervasive Computing, ETH Zurich and others.
- * 
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * and Eclipse Distribution License v1.0 which accompany this distribution.
- * 
- * The Eclipse Public License is available at
- *    http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
- *    http://www.eclipse.org/org/documents/edl-v10.html.
- * 
- * Contributors:
- *    Matthias Kovatsch - creator and main architect
- ******************************************************************************/
 package org.eclipse.californium.tools.resources;
 
 import java.util.Collection;
@@ -29,12 +14,16 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
 import org.eclipse.californium.tools.resources.RDGroupNodeResource.GroupMemberCtx;
 
-
-public class RDLookUpEPResource extends CoapResource {
+/**
+ * Look up based on /gp.
+ * @author andrianeshsg
+ *
+ */
+public class RDLookUpGPResource extends CoapResource {
 
 	private RDResource rdResource = null;
 	
-	public RDLookUpEPResource(String resourceIdentifier, RDResource rd) {
+	public RDLookUpGPResource(String resourceIdentifier, RDResource rd) {
 		super(resourceIdentifier);
 		this.rdResource = rd;
 	}
@@ -69,31 +58,16 @@ public class RDLookUpEPResource extends CoapResource {
 		}
 		
 		Iterator<Resource>  topResIt = topResources.iterator();
-		//andrianeshsg: Alterations to support lookup with gp argument
-		// ( rd-lookup/ep?gp=mygroup )
+
 		while (topResIt.hasNext()){
 			Resource topRes = topResIt.next();
 			Collection<Resource> resources = topRes.getChildren();
 			Iterator<Resource>  resIt = resources.iterator();
 			while(resIt.hasNext()){
 				Resource res = resIt.next();
-				System.out.println("Chekarw to resource me name["+res.getName()+"]. Psaxnw group["+groupQuery+"]");
-				if (groupQuery.isEmpty() && res.getClass() == RDNodeResource.class){
-					RDNodeResource node = (RDNodeResource) res;
-					if ( (domainQuery.isEmpty() || domainQuery.equals(node.getDomain())) && 
-						 (endpointQuery.isEmpty() || endpointQuery.equals(node.getEndpointIdentifier())) &&
-						 (endpointTypeQuery.isEmpty() || endpointTypeQuery.contains(node.getEndpointType()))) {
-					
-						result += "<"+node.getContext()+">;"+LinkFormat.END_POINT+"=\""+node.getEndpointIdentifier()+"\"";
-						result += ";"+LinkFormat.DOMAIN+"=\""+node.getDomain()+"\"";
-						if(node.getEndpointType() != null && !node.getEndpointType().isEmpty()){
-							result += ";"+LinkFormat.RESOURCE_TYPE+"=\""+node.getEndpointType()+"\"";
-						}
-								
-						result += ",";
-					}
-				}else if (res.getClass() == RDGroupNodeResource.class){
-					System.out.println("HEY!");
+//				System.out.println("Chekarw to resource me name["+res.getName()+"]. Psaxnw group["+groupQuery+"]");
+				if (res.getClass() == RDGroupNodeResource.class){
+//					System.out.println("HEY!");
 					RDGroupNodeResource node = (RDGroupNodeResource) res;
 					List<GroupMemberCtx> groupMembers = node.getMembers();
 					for(GroupMemberCtx member : groupMembers){
@@ -102,15 +76,17 @@ public class RDLookUpEPResource extends CoapResource {
 								(endpointTypeQuery.isEmpty() || endpointTypeQuery.contains(member.getEndpointType())) &&
 								(groupQuery.isEmpty() || groupQuery.equals(node.getGroupIdentifier())) ){
 							
-							result += "<"+node.getContext()+">;"+LinkFormat.END_POINT+"=\""+member.getEndpointName()+"\"";
+							result += "<"+node.getURI()+">;"+LinkFormat.GROUP+"=\""+node.getGroupIdentifier()+"\"";
 							result += ";"+LinkFormat.DOMAIN+"=\""+node.getDomain()+"\"";
-							result += ";"+LinkFormat.GROUP+"=\""+node.getGroupIdentifier()+"\"";
 							if(member.getEndpointType() != null && !member.getEndpointType().isEmpty()){
 								result += ";"+LinkFormat.RESOURCE_TYPE+"=\""+member.getEndpointType()+"\"";
 							}
-									
-							result += ",";
-							
+							if(endpointQuery.equals(member.getEndpointName()))
+								result += ";"+LinkFormat.END_POINT+"=\""+member.getEndpointName()+"\"" + ",";
+							else{
+								result += ",";
+								break;
+							}
 						}
 						
 						
