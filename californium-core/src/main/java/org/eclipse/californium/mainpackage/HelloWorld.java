@@ -53,7 +53,7 @@ public class HelloWorld {
 		server2.add(new CoapResource("HelloWorld_Resource_Name") {
 			public void handleGET(CoapExchange exchange) {
 				System.out.println("Thelw na apadisw ston "+exchange.getSourceAddress().getHostAddress()+":"
-						+ exchange.getSourcePort()+" me payload: ["+exchange.getRequestText()+"] !!! 1");
+						+ exchange.getSourcePort()+" me payload: ["+exchange.getRequestText()+"] !!! 2");
 				exchange.respond(ResponseCode.CONTENT, "Hello - World!!!2");
 			}
 		});	
@@ -82,7 +82,7 @@ public class HelloWorld {
 		client.useNONs();
 		CoAPEndpoint client_cEP = new CoAPEndpoint(9999);
 		client.setEndpoint(client_cEP);
-		client.setTimeout(2000);
+		//client.setTimeout(2000);
 		client.discoverRD("coap://224.0.1.187", "rt=core.rd*");
 		
 		//CLIENT INITIALIZES RD WITH SOME DATA 1
@@ -114,17 +114,62 @@ public class HelloWorld {
 		//REGISTERING A GROUP(group1[node1, node2])
 		request = new Request(Code.POST);
 		request.setURI("coap://"+client.rdList.get(0).getAddress()
-		+ client.rdList.get(0).getRdGroupPath()+"?gp=group1");
+		+ client.rdList.get(0).getRdGroupPath()+"?gp=group1&con='224.0.1.188'");
 		System.out.println("["+request.getURI()+"]");
 		request.setPayload("<>;ep='node1', <>;ep='node2'");
 		response = client.advanced(request);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
+		request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
+		request.setURI("coap://224.0.1.188/HelloWorld_Resource_Name");
+		request.setMulticast(true);
+		request.setConfirmable(false);
+		TimedHandler myHandler = new TimedHandler(CLIENT_TIMEOUT);
+		client.advanced(myHandler, request);
+		
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//REGISTERING A GROUP(group1[node1, node2])
+		request = new Request(Code.DELETE);
+		request.setURI("coap://"+client.rdList.get(0).getAddress()
+		+ client.rdList.get(0).getRdGroupPath()+"/group1");
+		System.out.println("["+request.getURI()+"]");
+		//request.setPayload("<>;ep='node1', <>;ep='node2'");
+		response = client.advanced(request);
+		
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
+		request.setURI("coap://224.0.1.188/HelloWorld_Resource_Name");
+		request.setMulticast(true);
+		request.setConfirmable(false);
+		myHandler = new TimedHandler(CLIENT_TIMEOUT);
+		client.advanced(myHandler, request);
+		
+/*
 		//REGISTERING A GROUP(group2[node1, node3])
 		request = new Request(Code.POST);
 		request.setURI("coap://"+client.rdList.get(0).getAddress()
 		+ client.rdList.get(0).getRdGroupPath()+"?gp=group2");
 		System.out.println("["+request.getURI()+"]");
-		request.setPayload("<>;ep='node1', <111.111.111.110>;ep='node3'");
+		request.setPayload("<>;ep='node1', <111.111.111.110:5683>;ep='node3'");
 		response = client.advanced(request);
 		
 		//REGISTERING A GROUP(group3[node1, node2])
@@ -134,13 +179,6 @@ public class HelloWorld {
 		System.out.println("["+request.getURI()+"]");
 		request.setPayload("<>;ep='node1', <>;ep='node2'");
 		response = client.advanced(request);
-		/*
-		  	"</sensors/temp>;ct=41;rt='temperature-c';if='sensor',"
-				+ "</sensors/light>;ct=41;rt='light-lux';if='sensor'"
-		 */
-	
-//		request.setPayload("<>;ep='node1', <>;ep='node2'");
-//		response = client.advanced(request);
 		
 		if(response != null){
 //			//System.out.println(response.advanced().getPayloadString());
@@ -170,6 +208,7 @@ public class HelloWorld {
 				+ client.rdList.get(0).getRdLookupPath() +"/gp");
 		response = client.advanced(request);
 		System.out.println("Group Lookup(/gp): CODE["+response.getCode().toString()+"]"+" Payload[" + response.advanced().getPayloadString()+"]");
+*/
 //		else
 //			System.out.println("NULL RESPONSE1");
 		

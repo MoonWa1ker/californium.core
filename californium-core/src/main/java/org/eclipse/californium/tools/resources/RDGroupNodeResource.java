@@ -15,6 +15,7 @@ import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.mainpackage.globaldata.RDGroupUtils;
 
 /**
  * Node that holds information about a group resource.
@@ -40,6 +41,7 @@ public class RDGroupNodeResource extends CoapResource {
 		this.groupIdentifier = groupID;
 		this.domain = domain;
 		this.rdResource = rd;
+		context = "";
 		members = new ArrayList<GroupMemberCtx>(0);
 	}
 
@@ -71,7 +73,9 @@ public class RDGroupNodeResource extends CoapResource {
 				check = new URI("coap", "", request.getSource().getHostAddress(), request.getSourcePort(), "", "", ""); // required to set port
 				context = check.toString().replace("@", "").replace("?", "").replace("#", ""); // URI is a silly class
 			} else {
-				check = new URI(context);
+//				check = new URI(context);
+				context = newContext;
+				System.out.println("To context mou einai: "+context);
 			}
 		} catch (Exception e) {
 			LOGGER.warning(e.toString());
@@ -124,27 +128,42 @@ public class RDGroupNodeResource extends CoapResource {
 	}
 	
 	/*
-	 * PUTs content to this resource. 
+	 * PUTs content to this resource.
+	 * andrianeshsg: After handling the request this endpoint must inform all the group members(old/new). 
 	 */
 	@Override
 	public void handlePOST(CoapExchange exchange) {
 		
 		LOGGER.info("Updating group: "+getContext());
+		List<GroupMemberCtx> oldMembers = members;
+		String oldCtx = context;
 		
 		setParameters(exchange.advanced().getRequest());
 		
+		List<GroupMemberCtx> newMembers = members;
+		String newCtx = context;
+		
 		// complete the request
 		exchange.respond(ResponseCode.CHANGED);
+		
+		RDGroupUtils.notifyGroupMembers(oldMembers, newMembers, oldCtx, newCtx);
 		
 	}
 	
 	/*
 	 * DELETEs this node resource
+	 * andrianeshsg: After handling the request this endpoint must inform all the group members(old/new). 
 	 */
 	@Override
 	public void handleDELETE(CoapExchange exchange) {
 		delete();
+		
+		List<GroupMemberCtx> oldMembers = members;
+		String oldCtx = context;
+		
 		exchange.respond(ResponseCode.DELETED);
+		
+		RDGroupUtils.notifyGroupMembers(oldMembers, new ArrayList<GroupMemberCtx>(0), oldCtx, "");
 	}
 		
 	/**

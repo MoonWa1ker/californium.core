@@ -1,12 +1,22 @@
 package org.eclipse.californium.tools.resources;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.LinkFormat;
+import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.CoAP.Code;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
+import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.mainpackage.globaldata.GlobalData;
+import org.eclipse.californium.mainpackage.globaldata.RDGroupUtils;
+import org.eclipse.californium.tools.resources.RDGroupNodeResource.GroupMemberCtx;
 
 /**
  * Root group resource.
@@ -39,7 +49,10 @@ public class RDGroupResource extends CoapResource {
 		String groupIdentifier = "";
 		String domain = "local";
 		RDGroupNodeResource resource = null;
-		
+		List<GroupMemberCtx> oldMembers = new ArrayList<GroupMemberCtx>();
+		List<GroupMemberCtx> newMembers = new ArrayList<GroupMemberCtx>();
+		String oldCtx = "";
+		String newCtx = "";
 		ResponseCode responseCode;
 
 		LOGGER.info("Group Registration request: "+exchange.getSourceAddress());
@@ -69,6 +82,7 @@ public class RDGroupResource extends CoapResource {
 				if (((RDGroupNodeResource) node).getGroupIdentifier().equals(groupIdentifier) 
 						&& ((RDGroupNodeResource) node).getDomain().equals(domain)) {
 					resource = (RDGroupNodeResource) node;
+					
 				}
 			}
 		}
@@ -85,6 +99,8 @@ public class RDGroupResource extends CoapResource {
 			
 			responseCode = ResponseCode.CREATED;
 		} else {
+			oldMembers = resource.getMembers();
+			oldCtx = resource.getContext();
 			responseCode = ResponseCode.CHANGED;
 		}
 		
@@ -94,6 +110,8 @@ public class RDGroupResource extends CoapResource {
 			exchange.respond(ResponseCode.BAD_REQUEST);
 			return;
 		}
+		newMembers = resource.getMembers();
+		newCtx = resource.getContext();
 		
 		LOGGER.info("Adding new group: "+resource.getContext());
 
@@ -102,6 +120,10 @@ public class RDGroupResource extends CoapResource {
 
 		// complete the request
 		exchange.respond(responseCode);
+		
+		//Notify all the group members (old/new)
+		RDGroupUtils.notifyGroupMembers(oldMembers, newMembers, oldCtx, newCtx);
 	}
+	
 
 }

@@ -22,18 +22,24 @@ package org.eclipse.californium.core;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.CoAPEndpoint;
 import org.eclipse.californium.core.network.Endpoint;
+import org.eclipse.californium.core.network.MyUDPConnector;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.MessageDeliverer;
 import org.eclipse.californium.core.server.ServerInterface;
@@ -41,6 +47,7 @@ import org.eclipse.californium.core.server.ServerMessageDeliverer;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.DiscoveryResource;
 import org.eclipse.californium.core.server.resources.Resource;
+import org.eclipse.californium.mainpackage.globaldata.GlobalData;
 
 /**
  * An execution environment for CoAP {@link Resource}s.
@@ -377,12 +384,131 @@ public class CoapServer implements ServerInterface {
 		
 		@Override
 		public void handleGET(CoapExchange exchange) {
-			LOGGER.info("Sending the root resource!!!");
-			exchange.respond(ResponseCode.CONTENT, msg);
+			parsePayload(exchange.getRequestText());
+//			MyUDPConnector con = (MyUDPConnector)((CoAPEndpoint)getEndpoint(CoAP.DEFAULT_COAP_PORT)).getConnector();
+			LOGGER.info("Sending the root resource!!! RequestWasMulticast["+exchange.advanced().getRequest().isMulticast()+"]");
+			exchange.respond(ResponseCode.CONTENT, "");
 		}
 		
 		public List<Endpoint> getEndpoints() {
 			return CoapServer.this.getEndpoints();
+		}
+		
+		/**
+		 * Parses the payload about joining/leaving a group.
+		 * @param payload payload to parse.
+		 */
+		private void parsePayload(String payload){
+			Scanner scanner = new Scanner(payload);
+			String pathTemp = null;
+			String gplPath = null;
+			String gpPath = null;
+			String siteLocalAddress = getSiteLocalAddress();
+			if(siteLocalAddress == null){
+				LOGGER.severe("MEGA ERROR!!!!!!!!");
+				System.exit(1);
+			}
+//			System.out.println("ELAVAAAAAAAAA["+payload+"]");
+			if((pathTemp = scanner.findInLine(GlobalData.PAYLOAD_GROUPL_DELIMITER+".*"+GlobalData.PAYLOAD_GROUPL_DELIMITER)) != null) {
+				gplPath = pathTemp.substring(GlobalData.PAYLOAD_GROUPL_DELIMITER.length(), pathTemp.length() - 
+						GlobalData.PAYLOAD_GROUPL_DELIMITER.length());
+//				System.out.println("LEAVE GROUP: "+gplPath);
+				String[] endpoints = gplPath.split(";");
+				for(String endpoint : endpoints){
+					// {scheme}://{IP}:{Port}
+					String[] uriParts = endpoint.split(":");
+					if(siteLocalAddress.equals(uriParts[1].substring(2, uriParts[1].length()))){
+						MyUDPConnector con = (MyUDPConnector)((CoAPEndpoint)getEndpoint(CoAP.DEFAULT_COAP_PORT)).getConnector();
+						
+						if((pathTemp = scanner.findInLine(GlobalData.PAYLOAD_GROUPOC_DELIMITER+".*"
+								+GlobalData.PAYLOAD_GROUPOC_DELIMITER)) != null) {
+							gpPath = pathTemp.substring(GlobalData.PAYLOAD_GROUPOC_DELIMITER.length(), pathTemp.length() - 
+									GlobalData.PAYLOAD_GROUPOC_DELIMITER.length());
+//							System.out.println("OLD CONTEXT: "+gpPath);
+							try {
+								LOGGER.info("Leaving group["+gpPath+"]");
+								con.leaveGroup(gpPath);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								scanner.close();
+							}
+						}
+
+					}
+				}
+				
+				
+			}
+//			if((pathTemp = scanner.findInLine(GlobalData.PAYLOAD_GROUPOC_DELIMITER+".*"+GlobalData.PAYLOAD_GROUPOC_DELIMITER)) != null) {
+//				gplPath = pathTemp.substring(GlobalData.PAYLOAD_GROUPOC_DELIMITER.length(), pathTemp.length() - 
+//						GlobalData.PAYLOAD_GROUPOC_DELIMITER.length());
+//				System.out.println("OLD CONTEXT: "+gplPath);
+//			}
+			if((pathTemp = scanner.findInLine(GlobalData.PAYLOAD_GROUPJ_DELIMITER+".*"+GlobalData.PAYLOAD_GROUPJ_DELIMITER)) != null) {
+				gplPath = pathTemp.substring(GlobalData.PAYLOAD_GROUPJ_DELIMITER.length(), pathTemp.length() - 
+						GlobalData.PAYLOAD_GROUPJ_DELIMITER.length());
+//				System.out.println("JOIN GROUP: "+gplPath);
+				String[] endpoints = gplPath.split(";");
+				for(String endpoint : endpoints){
+					// {scheme}://{IP}:{Port}
+					String[] uriParts = endpoint.split(":");
+					
+					if(siteLocalAddress.equals(uriParts[1].substring(2, uriParts[1].length()))){
+						MyUDPConnector con = (MyUDPConnector)((CoAPEndpoint)getEndpoint(CoAP.DEFAULT_COAP_PORT)).getConnector();
+						
+						if((pathTemp = scanner.findInLine(GlobalData.PAYLOAD_GROUPNC_DELIMITER+".*"
+								+GlobalData.PAYLOAD_GROUPNC_DELIMITER)) != null) {
+							gpPath = pathTemp.substring(GlobalData.PAYLOAD_GROUPNC_DELIMITER.length(), pathTemp.length() - 
+									GlobalData.PAYLOAD_GROUPNC_DELIMITER.length());
+//							System.out.println("NEW CONTEXT: "+gpPath);
+							try {
+								LOGGER.info("Joining group["+gpPath+"]");
+								con.joinGroup(gpPath);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								scanner.close();
+							}
+						}
+
+					}
+				}
+				
+			}
+//			if((pathTemp = scanner.findInLine(GlobalData.PAYLOAD_GROUPNC_DELIMITER+".*"+GlobalData.PAYLOAD_GROUPNC_DELIMITER)) != null) {
+//				gplPath = pathTemp.substring(GlobalData.PAYLOAD_GROUPNC_DELIMITER.length(), pathTemp.length() - 
+//						GlobalData.PAYLOAD_GROUPNC_DELIMITER.length());
+//				System.out.println("NEW CONTEXT: "+gplPath);
+//			}
+			scanner.close();
+		}
+		
+		/**
+		 * Gets the site local address.
+		 * @return site local address or null.
+		 */
+		private String getSiteLocalAddress(){
+			
+			try {
+				Enumeration e = NetworkInterface.getNetworkInterfaces();
+				while(e.hasMoreElements())
+				{
+				    NetworkInterface n = (NetworkInterface) e.nextElement();
+				    Enumeration ee = n.getInetAddresses();
+				    while (ee.hasMoreElements())
+				    {
+				        InetAddress i = (InetAddress) ee.nextElement();
+				        if(i.isSiteLocalAddress())
+				        	return i.getHostAddress();
+				    }
+				}
+			} catch (SocketException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			return null;
 		}
 	}
 

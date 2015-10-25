@@ -112,8 +112,8 @@ public class DataParser {
 		parseMessage(request);
 		
 		//andrianeshsg: We expect that the 'split' will divide the payload into 2 parts.
-		//The real payload and the isMulticast part.
-		String[] payloadArray = request.getPayloadString().split(GlobalData.PAYLOAD_DELIMITER);
+		//The rest of the payload and the isMulticast part.
+		String[] payloadArray = request.getPayloadString().split(GlobalData.PAYLOAD_MCAST_DELIMITER);
 		request.setMulticast(Boolean.parseBoolean(payloadArray[1]));
 		request.setPayload(payloadArray[0]);
 		return request;

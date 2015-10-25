@@ -26,9 +26,12 @@ public class LinkAttribute {
 
 // Constants ///////////////////////////////////////////////////////////////////
 
+	//andrianeshsg: Fixed bug with quoted string. quotes can be " " or ' '
+	//prev: accepted quotes " ". Now it can handle ' ' also.
 	public static final Pattern SEPARATOR      = Pattern.compile("\\s*;+\\s*");
 	public static final Pattern WORD           = Pattern.compile("\\w+");
-	public static final Pattern QUOTED_STRING  = Pattern.compile("\\G\".*?\"");
+	public static final Pattern QUOTED_STRING1  = Pattern.compile("\\G'.*?'");
+	public static final Pattern QUOTED_STRING2  = Pattern.compile("\\G\".*?\"");
 	public static final Pattern CARDINAL       = Pattern.compile("\\G\\d+");
 	
 // Members /////////////////////////////////////////////////////////////////////
@@ -73,7 +76,9 @@ public class LinkAttribute {
 			if (scanner.findWithinHorizon("=", 1) != null) {
 				
 				String value = null;
-				if ((value = scanner.findInLine(QUOTED_STRING)) != null) {
+				if ((value = scanner.findInLine(QUOTED_STRING1)) != null) {
+					attr.value = value.substring(1, value.length()-1); // trim " "
+				}else if((value = scanner.findInLine(QUOTED_STRING2)) != null) {
 					attr.value = value.substring(1, value.length()-1); // trim " "
 				} else if ((value = scanner.findInLine(WORD)) != null) {
 					attr.value = value;
@@ -83,7 +88,6 @@ public class LinkAttribute {
 					attr.value = scanner.next();
 					throw new RuntimeException("LinkAttribute scanner.next()");
 				}
-				
 			} else {
 				// flag attribute
 				attr.value = "";
