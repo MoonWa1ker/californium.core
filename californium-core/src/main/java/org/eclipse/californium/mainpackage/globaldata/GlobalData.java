@@ -2,19 +2,14 @@ package org.eclipse.californium.mainpackage.globaldata;
 
 public class GlobalData {
 	
-	/** Multicast delimiter used so the receiver can tell if a message was multicast.  */
-	public static final String PAYLOAD_MCAST_DELIMITER = "#McAsT#";
+	/** Workaround to check if a request is multicast. We pass an option(MULTICAST_OPT, 1)
+	 *  if a request is multicast or option(MULTICAST_OPT, 0) otherwise. */
+	public static final int MULTICAST_OPT = 256;
 	
-	/** Group Join delimiter. Addresses inside this delimiter are instructed to join a group. */
-	public static final String PAYLOAD_GROUPJ_DELIMITER = "#GpJ#";
+	/** option(GROUPJOIN_OPT, GROUP_ADDRESS_TO_JOIN)*/
+	public static final int GROUPJOIN_OPT = 257;
 	
-	/** Group Leave delimiter. Addresses inside this delimiter are instructed to leave a group. */
-	public static final String PAYLOAD_GROUPL_DELIMITER = "#GpL#";
-	
-	/** Group New Context. Context(mcast address) of the group some endpoints must join. */
-	public static final String PAYLOAD_GROUPNC_DELIMITER = "#GpNc#";
-	
-	/** Group Old Context. Context(mcast address) of the group some endpoints must leave. */
-	public static final String PAYLOAD_GROUPOC_DELIMITER = "#GpOc#";
+	/** option(GROUPLEAVE_OPT, GROUP_ADDRESS_TO_LEAVE)*/
+	public static final int GROUPLEAVE_OPT = 258;
 
 }

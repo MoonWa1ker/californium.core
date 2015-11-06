@@ -34,6 +34,8 @@ import org.eclipse.californium.core.Utils;
 import org.eclipse.californium.core.coap.CoAP.Type;
 import org.eclipse.californium.core.coap.EmptyMessage;
 import org.eclipse.californium.core.coap.Message;
+import org.eclipse.californium.core.coap.Option;
+import org.eclipse.californium.core.coap.OptionSet;
 import org.eclipse.californium.core.coap.Request;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.EndpointManager.ClientMessageDeliverer;
@@ -50,6 +52,7 @@ import org.eclipse.californium.elements.Connector;
 import org.eclipse.californium.elements.RawData;
 import org.eclipse.californium.elements.RawDataChannel;
 import org.eclipse.californium.elements.UDPConnector;
+import org.eclipse.californium.mainpackage.globaldata.GlobalData;
 
 
 /**
@@ -476,6 +479,12 @@ public class CoAPEndpoint implements Endpoint {
 			if (request.getDestinationPort() == 0)
 				throw new NullPointerException("Request has no destination port");
 			
+			//andrianeshsg: Mark the outgoing request as multicast in case it is.
+			OptionSet options = request.getOptions();
+			options.addOption(new Option(GlobalData.MULTICAST_OPT, 
+					request.getDestination().isMulticastAddress() ? 1 : 0));
+			request.setOptions(options);
+			
 			matcher.sendRequest(exchange, request);
 			
 			/* 
@@ -552,8 +561,7 @@ public class CoAPEndpoint implements Endpoint {
 		 */
 		private boolean setAsCanceled(Exchange exchange, Message msg){
 			String msgPayload = msg.getPayloadString();
-//			System.out.println("CANCELINGGGGGGG: "+ (msgPayload.equals("") && exchange.getCurrentRequest().isMulticast()));
-//			System.out.println("PAYLOAD["+msgPayload+"] ISMULTICAST["+exchange.getCurrentRequest().isMulticast()+"]");
+
 			return (msgPayload.equals("") && exchange.getRequest().isMulticast());
 		}
 	}
@@ -616,10 +624,18 @@ public class CoAPEndpoint implements Endpoint {
 					}
 					return;
 				}
+
 				request.setSource(raw.getAddress());
 				request.setSourcePort(raw.getPort());
 				request.setSenderIdentity(raw.getSenderIdentity());
 				
+				//andrianeshsg: If the incoming request is multicast request.setMulticast(true)
+				if(request.getOptions().hasOption(GlobalData.MULTICAST_OPT)){
+					List<Option> options  = request.getOptions().asSortedList();
+					for(Option o : options)
+						if(o.getNumber() == GlobalData.MULTICAST_OPT)
+							request.setMulticast(o.getIntegerValue() == 1 ? true : false);
+				}
 				/* 
 				 * Logging here causes significant performance loss.
 				 * If necessary, add an interceptor that logs the messages,

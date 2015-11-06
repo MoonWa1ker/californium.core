@@ -103,19 +103,11 @@ public class DataParser {
 		return code == EMPTY_CODE;
 	}
 	
-	//andrianeshsg: Since we need to serialize the isMulticast information
-	//we use our own delimiter in the payload field. Remember our custom information
-	//will always be at the end of the payload.
 	public Request parseRequest() {
 		assert(isRequest());
 		Request request = new Request(Code.valueOf(code));
 		parseMessage(request);
 		
-		//andrianeshsg: We expect that the 'split' will divide the payload into 2 parts.
-		//The rest of the payload and the isMulticast part.
-		String[] payloadArray = request.getPayloadString().split(GlobalData.PAYLOAD_MCAST_DELIMITER);
-		request.setMulticast(Boolean.parseBoolean(payloadArray[1]));
-		request.setPayload(payloadArray[0]);
 		return request;
 	}
 	

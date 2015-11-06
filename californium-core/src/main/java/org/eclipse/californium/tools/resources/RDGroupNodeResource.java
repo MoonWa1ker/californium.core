@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.coap.LinkFormat;
 import org.eclipse.californium.core.coap.Request;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.Resource;
@@ -228,7 +229,7 @@ public class RDGroupNodeResource extends CoapResource {
 	}
 	
 	/**
-	 * Returns the endpoint name from a given path. Expects
+	 * Returns the endpoint name from a given path. Expects {ep} argument.
 	 * @param path the path to get the ep attribute from.
 	 * @return the EP name, or null if it isnt included in the path.
 	 */
@@ -266,8 +267,22 @@ public class RDGroupNodeResource extends CoapResource {
 			Resource res = resIt.next();
 			if (res.getClass() == RDNodeResource.class){
 				RDNodeResource node = (RDNodeResource) res;
-				if (epName.equals(node.getEndpointIdentifier()))
-					return node.getContext();
+				if (epName.equals(node.getEndpointIdentifier())){
+					//FIXME This node belongs to a server. A client entity of the server must have
+					//registered this node to this rd. So node.getContext() holds the address(IP:PORT) of the client 
+					//that registered this node not the address that this node really listens to. Logically the IP is the
+					//same but the PORT cant be the same. So when a Manager registers this node in a group as <>;ep=thisnode 
+					//if we
+					//save it like <IP:CLIENT_PORT> as mentioned above we will have serious problem when ie. we need to
+					//tell that node to leave or join a particular group. Since the PORT we would be refering would be 
+					//the ephemeral port of the client. Workaround is to always assume that <> means 
+					//<IP:DEFAULT_COAP_PORT>.
+					String fullAddress = node.getContext().replace("/", ""); //fullAddress = coap://ip:port
+					String[] addressParts = fullAddress.split(":");
+					fullAddress = addressParts[1]+":"+CoAP.DEFAULT_COAP_PORT;
+					
+					return fullAddress;
+				}
 			}
 		}
 		

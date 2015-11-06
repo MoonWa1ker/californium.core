@@ -24,7 +24,7 @@ import org.eclipse.californium.elements.UDPConnector;
 
 public class MyUDPConnector implements Connector{
 
-public final static Logger LOGGER = Logger.getLogger(UDPConnector.class.toString());
+	public final static Logger LOGGER = Logger.getLogger(MyUDPConnector.class.toString());
 	
 	public static final int UNDEFINED = 0;
 	
@@ -105,21 +105,8 @@ public final static Logger LOGGER = Logger.getLogger(UDPConnector.class.toString
 		
 		// if localAddr is null or port is 0, the system decides
 		socket = new MulticastSocket(localAddr.getPort());//new DatagramSocket(localAddr.getPort(), localAddr.getAddress());
-		//InetAddress group = InetAddress.getByName("228.5.6.7");
-		//MulticastSocket s = new MulticastSocket(6789);
+
 		joinGroup("224.0.1.187");	// All CoAP Nodes group
-		
-//		socket.joinGroup(InetAddress.getByName("228.5.6.7"));
-//		DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(),
-//		                             group, 6789);
-//		 s.send(hi);
-//		 // get their responses!
-//		 byte[] buf = new byte[1000];
-//		 DatagramPacket recv = new DatagramPacket(buf, buf.length);
-//		 s.receive(recv);
-//		 ...
-		 // OK, I'm done talking - leave the group...
-//		 s.leaveGroup(group);
 		 
 		this.running = true;
 		

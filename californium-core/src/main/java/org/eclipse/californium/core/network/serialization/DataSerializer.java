@@ -47,14 +47,9 @@ public class DataSerializer {
 	
 	private DatagramWriter writer;
 	
-	//andrianeshsg: Since we need to serialize the isMulticast information
-	//we use our own delimiter in the payload field. Any payload that the user would like to use
-	//has been set by now so we add our own information in the end.
 	public byte[] serializeRequest(Request request) {
 		writer = new DatagramWriter();
 		Code code = request.getCode();
-		request.setPayload(request.getPayloadString()
-				+ GlobalData.PAYLOAD_MCAST_DELIMITER + request.isMulticast());
 		serializeMessage(request, code == null ? 0 : code.value);
 		return writer.toByteArray();
 	}

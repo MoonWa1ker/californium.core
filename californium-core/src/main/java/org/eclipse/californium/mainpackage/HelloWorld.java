@@ -133,35 +133,35 @@ public class HelloWorld {
 		client.advanced(myHandler, request);
 		
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//REGISTERING A GROUP(group1[node1, node2])
-		request = new Request(Code.DELETE);
-		request.setURI("coap://"+client.rdList.get(0).getAddress()
-		+ client.rdList.get(0).getRdGroupPath()+"/group1");
-		System.out.println("["+request.getURI()+"]");
-		//request.setPayload("<>;ep='node1', <>;ep='node2'");
-		response = client.advanced(request);
-		
-		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
-		request.setURI("coap://224.0.1.188/HelloWorld_Resource_Name");
-		request.setMulticast(true);
-		request.setConfirmable(false);
-		myHandler = new TimedHandler(CLIENT_TIMEOUT);
-		client.advanced(myHandler, request);
+//		try {
+//			Thread.sleep(1000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//		//REGISTERING A GROUP(group1[node1, node2])
+//		request = new Request(Code.DELETE);
+//		request.setURI("coap://"+client.rdList.get(0).getAddress()
+//		+ client.rdList.get(0).getRdGroupPath()+"/group1");
+//		System.out.println("["+request.getURI()+"]");
+//		//request.setPayload("<>;ep='node1', <>;ep='node2'");
+//		response = client.advanced(request);
+//		
+//		
+//		try {
+//			Thread.sleep(1000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//		request = new Request(Code.GET);//allnodes 224.0.1.187   HelloWorld_Resource_Name 
+//		request.setURI("coap://224.0.1.188/HelloWorld_Resource_Name");
+//		request.setMulticast(true);
+//		request.setConfirmable(false);
+//		myHandler = new TimedHandler(CLIENT_TIMEOUT);
+//		client.advanced(myHandler, request);
 		
 /*
 		//REGISTERING A GROUP(group2[node1, node3])
