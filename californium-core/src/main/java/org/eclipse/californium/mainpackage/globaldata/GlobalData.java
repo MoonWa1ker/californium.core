@@ -1,5 +1,7 @@
 package org.eclipse.californium.mainpackage.globaldata;
 
+import java.util.Random;
+
 public class GlobalData {
 	
 	/** Workaround to check if a request is multicast. We pass an option(MULTICAST_OPT, 1)
@@ -11,5 +13,8 @@ public class GlobalData {
 	
 	/** option(GROUPLEAVE_OPT, GROUP_ADDRESS_TO_LEAVE)*/
 	public static final int GROUPLEAVE_OPT = 258;
+	
+	/** Random generator*/
+	public static final Random random = new Random(1234567890);
 
 }

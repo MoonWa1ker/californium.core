@@ -103,8 +103,8 @@ public class LinkFormat {
 			.append(resource.getPath())
 			.append(resource.getName())
 			.append(">")
-			.append(LinkFormat.serializeAttributes(resource.getAttributes()));
-			//.append(","); andrianeshsg: fix for two consecutive delimiters behavior ie. <>bla,,<>bla2 
+			.append(LinkFormat.serializeAttributes(resource.getAttributes()))
+			.append(","); //FIXME andrianeshsg: Needs fix for two consecutive delimiters behavior ie. <>bla,,<>bla2 
 		return buffer;
 	}
 	

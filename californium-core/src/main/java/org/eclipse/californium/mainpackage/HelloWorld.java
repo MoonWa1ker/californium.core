@@ -84,24 +84,25 @@ public class HelloWorld {
 		client.setEndpoint(client_cEP);
 		//client.setTimeout(2000);
 		client.discoverRD("coap://224.0.1.187", "rt=core.rd*");
-		
+
 		//CLIENT INITIALIZES RD WITH SOME DATA 1
 		Request request = new Request(Code.POST);
 		request.setURI("coap://"+client.rdList.get(0).getAddress()
 		+ client.rdList.get(0).getRdPath()+"?ep=node1");
+		System.out.println("URI["+request.getURI()+"]");
 		request.setPayload("</sensors/temp>;ct=41;rt='temperature-c';if='sensor',"
 				+ "</sensors/light>;ct=41;rt='light-lux';if='sensor'");
 		CoapResponse response = client.advanced(request);
 		String locationPath2 = response.getOptions().getLocationPathString();
 		System.out.println("Initialize1: CODE["+response.getCode().toString()+"] Location["+locationPath2+"]");
-		
+		System.exit(1);
 		//LOOK UP THE RESOURCES SO FAR
 		request = new Request(Code.GET);
 		request.setURI("coap://"+client.rdList.get(0).getAddress()
 				+ client.rdList.get(0).getRdLookupPath() +"/res");
 		response = client.advanced(request);
 		System.out.println("Lookup: CODE["+response.getCode().toString()+"]"+" Payload[" + response.advanced().getPayloadString()+"]");
-
+		
 		//CLIENT INITIALIZES RD WITH SOME DATA 2
 		request = new Request(Code.POST);
 		request.setURI("coap://"+client.rdList.get(0).getAddress()

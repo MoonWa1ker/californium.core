@@ -337,7 +337,7 @@ public class CoapClient {
 		try {
 			while(true){
 				response = request.waitForResponse(getTimeout());
-				
+
 				if(response == null){
 					return;
 				}
@@ -354,6 +354,7 @@ public class CoapClient {
 						else if (rt.equals("core.rd-group"))
 							rdIntCtx.setRdGroupPath(w.getURI());
 					}
+					
 					System.out.println(rdIntCtx.toString());
 					rdList.add(rdIntCtx);
 				}

@@ -1,5 +1,7 @@
 package org.eclipse.californium.mainpackage;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +39,7 @@ public class HelloWorld2 {
 			}
 		});
 		server1.start();
-		 
+		
 //		System.out.println("[server1]Root resource: " + server1.getRoot().getName());
 //		for(Resource r : server1.getRoot().getChildren()){
 //			System.out.println("[server1]Child resource: " + r.getName());
