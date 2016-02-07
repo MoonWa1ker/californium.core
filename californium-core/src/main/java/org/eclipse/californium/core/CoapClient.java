@@ -925,7 +925,7 @@ public class CoapClient {
 	 * @param handler the Response handler
 	 * @return the CoAP observe relation
 	 */
-	private CoapObserveRelation observe(Request request, CoapHandler handler) {
+	public CoapObserveRelation observe(Request request, CoapHandler handler) {
 		Endpoint outEndpoint = getEffectiveEndpoint(request);
 		CoapObserveRelation relation = new CoapObserveRelation(request, outEndpoint);
 		request.addMessageObserver(new ObserveMessageObserverImpl(handler, relation));

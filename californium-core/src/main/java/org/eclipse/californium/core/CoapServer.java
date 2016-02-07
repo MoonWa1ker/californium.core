@@ -117,6 +117,10 @@ public class CoapServer implements ServerInterface {
 	
 	private NetworkConfig config;
 	
+	/**andrianeshsg: We suppose that 1 server = 1 endpoint, in order for the IP
+	 * workaround to succeed... */
+	public String epName = "";
+	
 	/**
 	 * Constructs a default server. The server starts after the method
 	 * {@link #start()} is called. If a server starts and has no specific ports
@@ -391,15 +395,18 @@ public class CoapServer implements ServerInterface {
 		}
 		
 		//andrianeshsg: If the request has GROUPLEAVE_OPT/GROUPJOIN_OPT  handle accordingly.
+		//The exchange.getRequestText().equals(epName) part is the workaround for the same IP bug.
 		@Override
 		public void handlePOST(CoapExchange exchange) {
 			MyUDPConnector con = (MyUDPConnector)((CoAPEndpoint)exchange.advanced().getEndpoint()).getConnector();
-			
 			if(exchange.getRequestOptions().hasOption(GlobalData.GROUPLEAVE_OPT)){
 				List<Option> options = exchange.getRequestOptions().asSortedList();
 				for(Option o : options)
-					if(o.getNumber() == GlobalData.GROUPLEAVE_OPT){
+					if(o.getNumber() == GlobalData.GROUPLEAVE_OPT && 
+						exchange.getRequestText().equals(epName)
+					){
 						try {
+							System.out.println("EP["+epName+"]: Leaving group "+ o.getStringValue());
 							con.leaveGroup(o.getStringValue());
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
@@ -411,8 +418,10 @@ public class CoapServer implements ServerInterface {
 			}else if(exchange.getRequestOptions().hasOption(GlobalData.GROUPJOIN_OPT)){
 				List<Option> options = exchange.getRequestOptions().asSortedList();
 				for(Option o : options)
-					if(o.getNumber() == GlobalData.GROUPJOIN_OPT){
+					if(o.getNumber() == GlobalData.GROUPJOIN_OPT && 
+						exchange.getRequestText().equals(epName)){
 						try {
+							System.out.println("EP["+epName+"]: Joining group "+ o.getStringValue());
 							con.joinGroup(o.getStringValue());
 						} catch (IOException e) {
 							// TODO Auto-generated catch block

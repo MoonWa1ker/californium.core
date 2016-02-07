@@ -16,5 +16,14 @@ public class GlobalData {
 	
 	/** Random generator*/
 	public static final Random random = new Random(1234567890);
-
+	
+	/** Resource types*/
+	public static final String res[] = {"temp", "light", "pressure"};
+	
+	/** Location Resource Values*/
+	public static final String locRes[] = {"W","NW", "N", "SW", "C", "S", "E", "NE", "SE"};
+	
+	/** Floor number.*/
+	public static String FloorNum = "";
+	
 }

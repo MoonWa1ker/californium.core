@@ -29,6 +29,7 @@ public class RDGroupUtils {
 	 * @param newCtx new group context(address).
 	 */
 	public static void notifyGroupMembers(List<GroupMemberCtx> oldMembers, List<GroupMemberCtx> newMembers, String oldCtx, String newCtx){
+//		System.out.println("before removing duplicates newmembers list size["+newMembers.size()+"]");
 		oldMembers = removeDuplicates(oldMembers);
 		newMembers = removeDuplicates(newMembers);
 		
@@ -41,10 +42,13 @@ public class RDGroupUtils {
 		// Notify Old Members
 		for(GroupMemberCtx m : oldMembers){
 			Request request = new Request(Code.POST);//allnodes 224.0.1.187 
-			request.setURI("coap://"+m.getAddress());
+			request.setURI("coap://"+oldCtx);
 			OptionSet options = request.getOptions();
 			options.addOption(new Option(GlobalData.GROUPLEAVE_OPT, oldCtx));
 			request.setOptions(options);
+			// Workaround to fix the fact that all sensors have same IP address...
+			request.setPayload(m.getEndpointName());
+			///				///
 			client.advanced(new CoapHandler() {
 				
 				@Override
@@ -57,7 +61,7 @@ public class RDGroupUtils {
 				@Override
 				public void onError() {
 					// TODO Auto-generated method stub
-					System.out.println("GROUP LEAVE ERROR(??)");
+//					System.out.println("GROUP LEAVE TIMEOUT");
 				}
 			}, request);
 			
@@ -66,11 +70,14 @@ public class RDGroupUtils {
 		
 		for(GroupMemberCtx m : newMembers){
 			Request request = new Request(Code.POST);//allnodes 224.0.1.187 
-			System.out.println("ADDRESZZ["+m.getAddress()+"]");
-			request.setURI("coap://"+m.getAddress());
+//			System.out.println("New members list size["+newMembers.size()+"]");
+//			System.out.println("ADDRESZZ[224.0.1.187] EP["+m.getEndpointName()+"]");
+			request.setURI("coap://"+"224.0.1.187");
 			OptionSet options = request.getOptions();
 			options.addOption(new Option(GlobalData.GROUPJOIN_OPT, newCtx));
 			request.setOptions(options);
+			// Workaround to fix the fact that all sensors have same IP address...
+			request.setPayload(m.getEndpointName());
 			client.advanced(new CoapHandler() {
 				
 				@Override
@@ -82,7 +89,7 @@ public class RDGroupUtils {
 				@Override
 				public void onError() {
 					// TODO Auto-generated method stub
-					System.out.println("GROUP JOIN ERROR(??)");
+//					System.out.println("GROUP JOIN TIMEOUT");
 				}
 			}, request);
 		}
@@ -100,7 +107,8 @@ public class RDGroupUtils {
 		for(GroupMemberCtx sourceMember : sourceList){
 			boolean foundIt = false;
 			for(GroupMemberCtx targetMember : targetList){
-				if(targetMember.getAddress().equals(sourceMember.getAddress())){
+				if(targetMember.getAddress().equals(sourceMember.getAddress()) 
+						&& targetMember.getEndpointName().equals(sourceMember.getEndpointName())){
 					foundIt = true;
 					break;
 				}

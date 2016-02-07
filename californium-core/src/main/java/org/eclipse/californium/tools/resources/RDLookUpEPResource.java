@@ -77,7 +77,6 @@ public class RDLookUpEPResource extends CoapResource {
 			Iterator<Resource>  resIt = resources.iterator();
 			while(resIt.hasNext()){
 				Resource res = resIt.next();
-				System.out.println("Chekarw to resource me name["+res.getName()+"]. Psaxnw group["+groupQuery+"]");
 				if (groupQuery.isEmpty() && res.getClass() == RDNodeResource.class){
 					RDNodeResource node = (RDNodeResource) res;
 					if ( (domainQuery.isEmpty() || domainQuery.equals(node.getDomain())) && 
@@ -93,7 +92,6 @@ public class RDLookUpEPResource extends CoapResource {
 						result += ",";
 					}
 				}else if (res.getClass() == RDGroupNodeResource.class){
-					System.out.println("HEY!");
 					RDGroupNodeResource node = (RDGroupNodeResource) res;
 					List<GroupMemberCtx> groupMembers = node.getMembers();
 					for(GroupMemberCtx member : groupMembers){
