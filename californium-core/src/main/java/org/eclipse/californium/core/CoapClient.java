@@ -42,7 +42,6 @@ import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.network.Endpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.mainpackage.RDInterfaceContext;
 import org.eclipse.californium.mainpackage.TimedHandler;
 
 /**

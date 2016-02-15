@@ -1,4 +1,4 @@
-package org.eclipse.californium.mainpackage;
+package org.eclipse.californium.core;
 
 /**
  * Context of a resource directory.

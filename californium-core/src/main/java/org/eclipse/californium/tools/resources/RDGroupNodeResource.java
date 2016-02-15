@@ -76,7 +76,7 @@ public class RDGroupNodeResource extends CoapResource {
 			} else {
 //				check = new URI(context);
 				context = newContext;
-				System.out.println("To context mou einai: "+context);
+//				System.out.println("To context mou einai: "+context);
 			}
 		} catch (Exception e) {
 			LOGGER.warning(e.toString());
@@ -220,7 +220,7 @@ public class RDGroupNodeResource extends CoapResource {
 				memberCtx.addAttribute(attr);
 			}
 			//memberCtx.setEndpointName(getGroupIdentifier());
-			System.out.println("MEMBER: "+memberCtx.toString());
+//			System.out.println("MEMBER: "+memberCtx.toString());
 			members.add(memberCtx);
 		}
 		scanner.close();
